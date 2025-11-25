@@ -15,6 +15,7 @@ export async function authenticate() {
 
 	const browser = await puppeteer.launch({
 		userDataDir: env.BROWSER_DATA_DIR,
+		headless: false,
 		args: ['--no-sandbox', '--disable-setuid-sandbox']
 	});
 
@@ -89,9 +90,6 @@ export async function authenticate() {
 			throw new Error('Failed to open schedule builder page');
 		}
 		console.log(4);
-
-		await schedulerPage.waitForNetworkIdle({ timeout: 30_000 });
-		console.log(5);
 		console.log('[📝] Extracting cookies and XSRF token…');
 
 		const cookies = await schedulerPage.cookies();
@@ -155,5 +153,6 @@ export async function verifyCookies(jar: CookieJar) {
 
 if (import.meta.main) {
 	console.log('[🚀] Extracting cookies from SPIRE Schedule Builder');
+	await authenticate();
 	await authenticate();
 }

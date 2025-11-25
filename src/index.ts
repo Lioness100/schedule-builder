@@ -4,9 +4,6 @@ import { authenticate, getCookieString, getXsrfToken, verifyCookies, SCHEDULE_BU
 import { loadCookies } from './storage';
 import { env } from './config';
 
-// Increase stack trace limit for better debugging
-Error.stackTraceLimit = 50;
-
 let cookieJar = await loadCookies();
 let refreshPromise: Promise<CookieJar> | null = null;
 

@@ -3,4 +3,3 @@ apps:
     script: "src/index.ts"
     interpreter: "bun"
     time: true
-    node_args: "--stack-trace-limit=50"
