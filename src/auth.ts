@@ -15,7 +15,6 @@ export async function authenticate() {
 
 	const browser = await puppeteer.launch({
 		userDataDir: env.BROWSER_DATA_DIR,
-		headless: false,
 		args: ['--no-sandbox', '--disable-setuid-sandbox']
 	});
 
