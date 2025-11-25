@@ -1,0 +1,5 @@
+apps:
+  - name: "schedule-builder"
+    script: "src/index.ts"
+    interpreter: "bun"
+    time: true

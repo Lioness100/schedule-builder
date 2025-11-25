@@ -7,7 +7,8 @@
 	"private": true,
 	"scripts": {
 		"cookies": "bun src/auth.ts",
-		"start": "bun ."
+		"start": "bun .",
+		"pm2": "pm2 start ecosystem.yml"
 	},
 	"dependencies": {
 		"envalid": "^8.1.1",
