@@ -23,7 +23,9 @@ export async function authenticate() {
 		await page.emulate(KnownDevices['iPad Pro landscape']);
 
 		console.log('[💬] Navigating to SPIRE portal…');
-		await page.goto(SPIRE_ENTRY_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+		await page.goto(SPIRE_ENTRY_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch((error) => {
+			throw new Error(`Failed to navigate to SPIRE portal: ${error.message}`, { cause: error });
+		});
 
 		if (page.url().includes('login.microsoftonline.com')) {
 			console.log('[🔐] Logging in with Microsoft OAuth…');
@@ -67,13 +69,23 @@ export async function authenticate() {
 		await page.waitForNetworkIdle();
 
 		console.log('[🖱️] Navigating to schedule builder…');
-		await page.waitForSelector('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$2', { timeout: 15_000 });
-		await page.click('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$2');
-		await page.waitForSelector('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$24\\$\\$10', { timeout: 15_000 });
-
-		const newPagePromise = browser.waitForTarget((target) => target.url().includes(SCHEDULE_BUILDER_URL), {
-			timeout: 30_000
+		await page.waitForSelector('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$2', { timeout: 15_000 }).catch((error) => {
+			throw new Error(`Failed to find view button #SCC_LO_FL_WRK_SCC_VIEW_BTN$2: ${error.message}`, {
+				cause: error
+			});
 		});
+		await page.click('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$2');
+		await page.waitForSelector('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$24\\$\\$10', { timeout: 15_000 }).catch((error) => {
+			throw new Error(`Failed to find schedule builder button: ${error.message}`, { cause: error });
+		});
+
+		const newPagePromise = browser
+			.waitForTarget((target) => target.url().includes(SCHEDULE_BUILDER_URL), {
+				timeout: 30_000
+			})
+			.catch((error) => {
+				throw new Error(`Failed to wait for schedule builder page to open: ${error.message}`, { cause: error });
+			});
 
 		await page.click('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$24\\$\\$10');
 
@@ -108,7 +120,11 @@ export async function authenticate() {
 			await cookieJar.setCookie(toughCookie, url);
 		}
 
-		await schedulerPage.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 });
+		await schedulerPage
+			.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 })
+			.catch((error) => {
+				throw new Error(`Failed to find XSRF token input: ${error.message}`, { cause: error });
+			});
 		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
 		const xsrfCookie = new Cookie({
 			key: 'X-XSRF-TOKEN-VALUE',
