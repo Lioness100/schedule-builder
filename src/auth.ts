@@ -83,7 +83,7 @@ export async function authenticate() {
 
 		await schedulerPage.waitForNetworkIdle({ timeout: 30_000 });
 
-		console.log('[📝] Extracting cookies…');
+		console.log('[📝] Extracting cookies and XSRF token…');
 
 		const cookies = await schedulerPage.cookies();
 		const cookieJar = new CookieJar();
@@ -104,7 +104,20 @@ export async function authenticate() {
 			await cookieJar.setCookie(toughCookie, url);
 		}
 
+		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
+		const xsrfCookie = new Cookie({
+			key: 'X-XSRF-TOKEN-VALUE',
+			value: xsrfToken,
+			domain: 'umass.collegescheduler.com',
+			path: '/',
+			httpOnly: false,
+			secure: true
+		});
+
+		await cookieJar.setCookie(xsrfCookie, SCHEDULE_BUILDER_URL);
 		await saveCookies(cookieJar);
+		console.log('[✅] Cookie extraction complete');
+
 		return cookieJar;
 	} finally {
 		await browser.close();
@@ -113,6 +126,12 @@ export async function authenticate() {
 
 export function getCookieString(jar: CookieJar) {
 	return jar.getCookieString(SCHEDULE_BUILDER_URL);
+}
+
+export async function getXsrfToken(jar: CookieJar) {
+	const cookies = await jar.getCookies(SCHEDULE_BUILDER_URL);
+	const xsrfCookie = cookies.find((c) => c.key === 'X-XSRF-TOKEN-VALUE')!;
+	return xsrfCookie.value;
 }
 
 export async function verifyCookies(jar: CookieJar) {
@@ -127,5 +146,4 @@ export async function verifyCookies(jar: CookieJar) {
 if (import.meta.main) {
 	console.log('[🚀] Extracting cookies from SPIRE Schedule Builder');
 	await authenticate();
-	console.log('[✅] Cookie extraction complete');
 }

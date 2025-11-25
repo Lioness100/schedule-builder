@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { CookieJar } from 'tough-cookie';
-import { authenticate, getCookieString, verifyCookies, SCHEDULE_BUILDER_URL } from './auth';
+import { authenticate, getCookieString, getXsrfToken, verifyCookies, SCHEDULE_BUILDER_URL } from './auth';
 import { loadCookies } from './storage';
 import { env } from './config';
 
@@ -48,21 +48,23 @@ const server = Bun.serve({
 
 			await refreshPromise;
 			const cookie = await getCookieString(cookieJar!);
+			const xsrfToken = await getXsrfToken(cookieJar!);
 
 			console.log(`[→] ${req.method} ${url.pathname}`);
 			const targetUrl = `${SCHEDULE_BUILDER_URL}${url.pathname}${url.search}`;
 			const body = req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined;
 
-			const makeRequest = async () =>
+			const makeRequest = () =>
 				fetch(targetUrl, {
 					method: req.method,
+					body,
+					redirect: 'manual',
 					headers: {
 						cookie,
 						'Content-Type': 'application/json',
-						'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-					},
-					body,
-					redirect: 'manual'
+						'X-Requested-With': 'XMLHttpRequest',
+						'X-XSRF-TOKEN': xsrfToken
+					}
 				});
 
 			let response = await makeRequest();
