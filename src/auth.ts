@@ -104,6 +104,7 @@ export async function authenticate() {
 			await cookieJar.setCookie(toughCookie, url);
 		}
 
+		await schedulerPage.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 });
 		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
 		const xsrfCookie = new Cookie({
 			key: 'X-XSRF-TOKEN-VALUE',
