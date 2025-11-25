@@ -153,5 +153,4 @@ export async function verifyCookies(jar: CookieJar) {
 if (import.meta.main) {
 	console.log('[🚀] Extracting cookies from SPIRE Schedule Builder');
 	await authenticate();
-	await authenticate();
 }
