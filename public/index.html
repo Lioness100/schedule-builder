@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMass Schedule Builder Proxy</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='15' fill='%239c142c'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white' font-family='Arial, sans-serif' font-weight='bold'>U</text></svg>">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        :root {
+            --primary-bg: #9c142c;
+            --secondary-bg: #592830;
+            --secondary: #000;
+            --default-bg: #EAEAEA;
+            --primary-border: #ddd;
+            --icon-info-color: #1488bc;
+        }
+
+        body {
+            padding-top: 70px;
+            padding-bottom: 70px;
+        }
+
+        .navbar-default {
+            background-color: var(--primary-bg);
+            border: none;
+        }
+
+        .navbar-default .navbar-brand {
+            color: white;
+            font-weight: 500;
+        }
+
+        .navbar-default .navbar-brand:hover,
+        .navbar-default .navbar-brand:focus {
+            color: #f0f0f0;
+        }
+
+        .page-header {
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 9px;
+            border-bottom: 1px solid var(--primary-border);
+        }
+
+        .front-page-title {
+            font-weight: 500;
+            font-size: 29px;
+            color: var(--secondary);
+        }
+
+        label, strong {
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-bg);
+            border-color: #d5d5d5;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus,
+        .btn-primary:active {
+            background-color: #8a1226;
+            border-color: #afafaf;
+        }
+
+        .info-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--primary-border);
+            margin-bottom: 20px;
+        }
+
+        .endpoint-block {
+            background-color: white;
+            padding: 15px;
+            border-left: 3px solid var(--primary-bg);
+            margin-bottom: 15px;
+        }
+
+        .endpoint-block code {
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--secondary);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-unknown {
+            background-color: #ccc;
+        }
+
+        .status-healthy {
+            background-color: #5cb85c;
+        }
+
+        .status-unhealthy {
+            background-color: #d9534f;
+        }
+
+        .icon-lg i {
+            vertical-align: middle;
+            font-size: 22px;
+            color: var(--primary-bg);
+        }
+
+        .top20 {
+            margin-top: 20px;
+        }
+
+        .bottom15 {
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+        }
+
+        .feature-list li i {
+            color: var(--primary-bg);
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        @media (max-width: 767px) {
+            body {
+                padding-top: 50px;
+            }
+
+            .front-page-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <span class="navbar-brand">UMass Schedule Builder Proxy</span>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="https://github.com/Lioness100/scheduler-builder" target="_blank" style="color: white;">
+                        <i class="fa fa-github"></i> GitHub
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="front-page-title">UMass Schedule Builder Proxy</h1>
+        </div>
+
+        <div class="info-section">
+            <h3><strong>Service Status</strong></h3>
+            <p>
+                <span class="status-indicator status-unknown" id="status-indicator"></span>
+                <span id="status-text">Checking...</span>
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h3><strong>About</strong></h3>
+                <p>This proxy provides authenticated access to the UMass Schedule Builder API. It automatically handles Microsoft OAuth authentication and maintains session cookies.</p>
+
+                <ul class="feature-list top20">
+                    <li><i class="fa fa-lock"></i> Automatic Microsoft OAuth authentication</li>
+                    <li><i class="fa fa-database"></i> Persistent cookie caching</li>
+                    <li><i class="fa fa-refresh"></i> Smart auto-refresh before expiration</li>
+                    <li><i class="fa fa-heartbeat"></i> Health monitoring with auto-recovery</li>
+                </ul>
+            </div>
+
+            <div class="col-md-6">
+                <h3><strong>API Endpoints</strong></h3>
+
+                <div class="endpoint-block">
+                    <strong>Health Check</strong>
+                    <p><code>GET /health</code></p>
+                    <p class="text-muted">Returns current authentication status</p>
+                </div>
+
+                <div class="endpoint-block">
+                    <strong>Proxy Requests</strong>
+                    <p><code>GET/POST /api/*</code></p>
+                    <p class="text-muted">Proxies requests to Schedule Builder with authentication</p>
+                    <p class="text-muted"><small><i class="fa fa-shield"></i> Protected endpoints require API key (except /api/terms)</small></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="top20">
+            <h3><strong>Usage Example</strong></h3>
+            <div class="endpoint-block">
+                <strong>Try it live:</strong>
+                <p>
+                    <button class="btn btn-primary" onclick="fetchTerms()">
+                        <i class="fa fa-refresh"></i> Fetch Available Terms
+                    </button>
+                </p>
+                <div id="terms-result" style="display: none; margin-top: 15px;">
+                    <strong>Response:</strong>
+                    <pre id="terms-data" style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 10px; max-height: 300px; overflow-y: auto;"></pre>
+                </div>
+            </div>
+            <div class="endpoint-block">
+                <strong>cURL Example:</strong>
+                <pre id="curl-example" style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin: 0;"></pre>
+            </div>
+        </div>
+
+        <div class="info-section top20">
+            <h4><strong><i class="fa fa-shield"></i> API Security</strong></h4>
+            <p>Protected API endpoints require an API key passed via the <code>Authorization: Bearer</code> header. Public endpoints (<code>/health</code>, <code>/api/terms</code>) do not require authentication.</p>
+            <p class="text-muted"><small>Generate a secure key: <code>openssl rand -base64 32</code></small></p>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+
+        async function checkHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+
+                const indicator = document.getElementById('status-indicator');
+                const statusText = document.getElementById('status-text');
+
+                if (data.healthy) {
+                    indicator.className = 'status-indicator status-healthy';
+                    statusText.textContent = 'Service is healthy and authenticated';
+                } else {
+                    indicator.className = 'status-indicator status-unhealthy';
+                    statusText.textContent = 'Service is unavailable (authentication required)';
+                }
+            } catch (error) {
+                const indicator = document.getElementById('status-indicator');
+                const statusText = document.getElementById('status-text');
+
+                indicator.className = 'status-indicator status-unhealthy';
+                statusText.textContent = 'Unable to connect to service';
+            }
+        }
+
+        async function fetchTerms() {
+            const button = event.target.closest('button');
+            const resultDiv = document.getElementById('terms-result');
+            const dataElement = document.getElementById('terms-data');
+
+            button.disabled = true;
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Loading...';
+
+            try {
+                const response = await fetch('/api/terms');
+                const data = await response.json();
+
+                dataElement.textContent = JSON.stringify(data, null, 2);
+                resultDiv.style.display = 'block';
+
+                button.innerHTML = '<i class="fa fa-check"></i> Success!';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fa fa-refresh"></i> Fetch Available Terms';
+                    button.disabled = false;
+                }, 2000);
+            } catch (error) {
+                dataElement.textContent = 'Error: ' + error.message;
+                resultDiv.style.display = 'block';
+
+                button.innerHTML = '<i class="fa fa-times"></i> Error';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fa fa-refresh"></i> Fetch Available Terms';
+                    button.disabled = false;
+                }, 2000);
+            }
+        }
+
+        function updateCurlExamples() {
+            const curlExample = document.getElementById('curl-example');
+            curlExample.textContent = `# Public endpoint
+curl ${baseUrl}/api/terms
+
+# Protected endpoint (requires API key)
+curl -H "Authorization: Bearer YOUR_API_KEY" \\
+  ${baseUrl}/api/terms/Spring%202026/courses`;
+        }
+
+        checkHealth();
+        updateCurlExamples();
+    </script>
+</body>
+</html>

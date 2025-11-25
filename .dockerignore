@@ -1,0 +1,14 @@
+node_modules
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.md
+.cache
+.browser-data
+Dockerfile
+docker-compose.yml
+.dockerignore
+.eslintrc.*
+.prettierrc

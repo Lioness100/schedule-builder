@@ -1,0 +1,31 @@
+{
+	"name": "schedule-builder",
+	"version": "1.0.0",
+	"description": "Local reverse-proxy to UMass Schedule Builder that auto-authenticates via Microsoft SSO",
+	"module": "src/index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"cookies": "bun src/auth.ts",
+		"start": "bun ."
+	},
+	"dependencies": {
+		"envalid": "^8.1.1",
+		"puppeteer": "^24.31.0",
+		"tough-cookie": "^6.0.0"
+	},
+	"devDependencies": {
+		"@lioness100/configs": "^1.0.34",
+		"@types/bun": "^1.3.3",
+		"@types/tough-cookie": "^4.0.5",
+		"eslint": "^8.57.0",
+		"prettier": "^3.6.2",
+		"typescript": "^5.6.3"
+	},
+	"prettier": "@lioness100/configs/prettier",
+	"eslintConfig": {
+		"extends": [
+			"./node_modules/@lioness100/configs/.eslintrc.json"
+		]
+	}
+}

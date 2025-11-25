@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    ports:
+      - '${PORT:-3007}:3007'
+    environment:
+      - UMASS_EMAIL=${UMASS_EMAIL}
+      - UMASS_PASSWORD=${UMASS_PASSWORD}
+      - PORT=3007
+      - KEEPALIVE_INTERVAL=${KEEPALIVE_INTERVAL:-45000}
+      - BROWSER_DATA_DIR=/app/.browser-data
+      - COOKIE_PATH=/app/.cache/cookies.json
+    volumes:
+      - cookie-cache:/app/.cache
+      - browser-data:/app/.browser-data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3007/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  cookie-cache:
+  browser-data:
