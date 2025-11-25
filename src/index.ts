@@ -51,6 +51,7 @@ const server = Bun.serve({
 
 			console.log(`[→] ${req.method} ${url.pathname}`);
 			const targetUrl = `${SCHEDULE_BUILDER_URL}${url.pathname}${url.search}`;
+			const body = req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined;
 
 			const makeRequest = async () =>
 				fetch(targetUrl, {
@@ -60,7 +61,7 @@ const server = Bun.serve({
 						'Content-Type': 'application/json',
 						'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 					},
-					body: req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined,
+					body,
 					redirect: 'manual'
 				});
 
