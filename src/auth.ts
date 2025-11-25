@@ -79,7 +79,11 @@ export async function authenticate() {
 
 		console.log('[⏳] Waiting for schedule builder to open…');
 		const target = await newPagePromise;
-		const schedulerPage = await target.asPage();
+		const schedulerPage = await target.page();
+
+		if (!schedulerPage) {
+			throw new Error('Failed to open schedule builder page');
+		}
 
 		await schedulerPage.waitForNetworkIdle({ timeout: 30_000 });
 
