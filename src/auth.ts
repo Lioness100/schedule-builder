@@ -107,6 +107,8 @@ export async function authenticate() {
 
 		await cookieJar.setCookie(xsrfCookie, SCHEDULE_BUILDER_URL);
 		console.log(3);
+		await schedulerPage.waitForSelector('#Term-options', { timeout: 15_000 });
+		console.log(4);
 		const cookies = await schedulerPage.cookies();
 
 		for (const cookie of cookies) {
