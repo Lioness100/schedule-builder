@@ -1,0 +1,3 @@
+[submodule "open-seats-tracker"]
+	path = example
+	url = https://github.com/Lioness100/open-seats-tracker.git
