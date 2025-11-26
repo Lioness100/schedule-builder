@@ -47,23 +47,21 @@ const server = Bun.serve({
 			}
 
 			await refreshPromise;
-			const cookie = await getCookieString(cookieJar!);
-			const xsrfToken = await getXsrfToken(cookieJar!);
 
 			console.log(`[→] ${req.method} ${url.pathname}`);
 			const targetUrl = `${SCHEDULE_BUILDER_URL}${url.pathname}${url.search}`;
 			const body = req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined;
 
-			const makeRequest = () =>
+			const makeRequest = async () =>
 				fetch(targetUrl, {
 					method: req.method,
 					body,
 					redirect: 'manual',
 					headers: {
-						cookie,
 						'Content-Type': 'application/json',
 						'X-Requested-With': 'XMLHttpRequest',
-						'X-XSRF-TOKEN': xsrfToken
+						'X-Xsrf-Token': await getXsrfToken(cookieJar!),
+						cookie: await getCookieString(cookieJar!)
 					}
 				});
 

@@ -80,15 +80,13 @@ export async function authenticate() {
 		await page.click('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$24\\$\\$10');
 
 		console.log('[⏳] Waiting for schedule builder to open…');
-		console.log(1);
 		const target = await newPagePromise;
-		console.log(2);
 		const schedulerPage = await target.page();
-		console.log(3);
+
 		if (!schedulerPage) {
 			throw new Error('Failed to open schedule builder page');
 		}
-		console.log(4);
+
 		console.log('[📝] Extracting cookies and XSRF token…');
 
 		const cookies = await schedulerPage.cookies();
