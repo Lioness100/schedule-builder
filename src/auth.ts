@@ -91,8 +91,11 @@ export async function authenticate() {
 
 		const cookieJar = new CookieJar();
 
+		console.log(1);
 		await schedulerPage.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 });
+		console.log(2);
 		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
+		console.log(2.5);
 		const xsrfCookie = new Cookie({
 			key: 'X-XSRF-TOKEN-VALUE',
 			value: xsrfToken,
@@ -103,7 +106,9 @@ export async function authenticate() {
 		});
 
 		await cookieJar.setCookie(xsrfCookie, SCHEDULE_BUILDER_URL);
+		console.log(3);
 		await schedulerPage.waitForNetworkIdle({ timeout: 15_000 });
+		console.log(4);
 		const cookies = await schedulerPage.cookies();
 
 		for (const cookie of cookies) {
