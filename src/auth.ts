@@ -89,8 +89,22 @@ export async function authenticate() {
 
 		console.log('[📝] Extracting cookies and XSRF token…');
 
-		const cookies = await schedulerPage.cookies();
 		const cookieJar = new CookieJar();
+
+		await schedulerPage.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 });
+		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
+		const xsrfCookie = new Cookie({
+			key: 'X-XSRF-TOKEN-VALUE',
+			value: xsrfToken,
+			domain: 'umass.collegescheduler.com',
+			path: '/',
+			httpOnly: false,
+			secure: true
+		});
+
+		await cookieJar.setCookie(xsrfCookie, SCHEDULE_BUILDER_URL);
+		await schedulerPage.waitForNetworkIdle({ timeout: 15_000 });
+		const cookies = await schedulerPage.cookies();
 
 		for (const cookie of cookies) {
 			const toughCookie = new Cookie({
@@ -108,18 +122,6 @@ export async function authenticate() {
 			await cookieJar.setCookie(toughCookie, url);
 		}
 
-		await schedulerPage.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 });
-		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
-		const xsrfCookie = new Cookie({
-			key: 'X-XSRF-TOKEN-VALUE',
-			value: xsrfToken,
-			domain: 'umass.collegescheduler.com',
-			path: '/',
-			httpOnly: false,
-			secure: true
-		});
-
-		await cookieJar.setCookie(xsrfCookie, SCHEDULE_BUILDER_URL);
 		await saveCookies(cookieJar);
 		console.log('[✅] Cookie extraction complete');
 
