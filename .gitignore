@@ -48,3 +48,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
+# Example project
+example/
