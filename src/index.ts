@@ -6,14 +6,24 @@ import { env } from './config';
 
 let cookieJar = await loadCookies();
 let refreshPromise: Promise<CookieJar> | null = null;
+let lastAuthTime = Date.now();
 
 async function refreshCookies() {
 	if (refreshPromise) {
 		return refreshPromise;
 	}
 
+	const timeSinceLastAuth = Date.now() - lastAuthTime;
+	const minutesSinceLastAuth = Math.floor(timeSinceLastAuth / 60_000);
+	const secondsSinceLastAuth = Math.floor((timeSinceLastAuth % 60_000) / 1000);
+
+	console.error(`[⏱️] Time since last auth: ${minutesSinceLastAuth}m ${secondsSinceLastAuth}s`);
+
 	refreshPromise = authenticate();
 	cookieJar = await refreshPromise;
+
+	// eslint-disable-next-line require-atomic-updates
+	lastAuthTime = Date.now();
 
 	// eslint-disable-next-line require-atomic-updates
 	refreshPromise = null;
