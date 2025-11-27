@@ -4,26 +4,18 @@ import { authenticate, getCookieString, getXsrfToken, verifyCookies, SCHEDULE_BU
 import { loadCookies } from './storage';
 import { env } from './config';
 
+const COOKIE_LIFETIME_MS = 50 * 60 * 1000;
+
 let cookieJar = await loadCookies();
 let refreshPromise: Promise<CookieJar> | null = null;
-let lastAuthTime = Date.now();
 
 async function refreshCookies() {
 	if (refreshPromise) {
 		return refreshPromise;
 	}
 
-	const timeSinceLastAuth = Date.now() - lastAuthTime;
-	const minutesSinceLastAuth = Math.floor(timeSinceLastAuth / 60_000);
-	const secondsSinceLastAuth = Math.floor((timeSinceLastAuth % 60_000) / 1000);
-
-	console.error(`[⏱️] Time since last auth: ${minutesSinceLastAuth}m ${secondsSinceLastAuth}s`);
-
 	refreshPromise = authenticate();
 	cookieJar = await refreshPromise;
-
-	// eslint-disable-next-line require-atomic-updates
-	lastAuthTime = Date.now();
 
 	// eslint-disable-next-line require-atomic-updates
 	refreshPromise = null;
@@ -97,14 +89,11 @@ const server = Bun.serve({
 
 console.log(`[🚀] Server listening on ${server.url}`);
 
-async function keepaliveCheck() {
-	const isValid = await verifyCookies(cookieJar!);
-	if (!isValid) {
-		console.log('[⚠️] Keepalive check failed, triggering refresh…');
-		await refreshCookies();
-	}
-}
+const lastCookieCreation = (await cookieJar!.getCookies(SCHEDULE_BUILDER_URL))[0].creation as Date;
+const cookieAge = Date.now() - lastCookieCreation.getTime();
+const timeUntilRefresh = Math.max(0, COOKIE_LIFETIME_MS - cookieAge);
 
-setInterval(() => {
-	void keepaliveCheck();
-}, env.KEEPALIVE_INTERVAL);
+setTimeout(() => {
+	void refreshCookies();
+	setInterval(() => void refreshCookies(), COOKIE_LIFETIME_MS);
+}, timeUntilRefresh);
