@@ -78,9 +78,13 @@ export async function authenticate() {
 		await page.click('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$2');
 		await page.waitForSelector('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$24\\$\\$10', { timeout: 15_000 });
 
-		const newPagePromise = browser.waitForTarget((target) => target.url().includes(SCHEDULE_BUILDER_URL), {
-			timeout: 30_000
-		});
+		const newPagePromise = browser.waitForTarget(
+			(target) => {
+				console.log(target.url());
+				return target.url().includes(SCHEDULE_BUILDER_URL) && !target.url().includes('logged-out');
+			},
+			{ timeout: 30_000 }
+		);
 
 		await page.click('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$24\\$\\$10');
 
