@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { CookieJar } from 'tough-cookie';
-import { authenticate, getCookieString, getXsrfToken, verifyCookies, SCHEDULE_BUILDER_URL } from './auth';
+import { authenticate, getCookieString, getXsrfToken, verifyCookies, SCHEDULE_BUILDER_URL, getCookieAge } from './auth';
 import { loadCookies } from './storage';
 import { env } from './config';
 
@@ -89,8 +89,7 @@ const server = Bun.serve({
 
 console.log(`[🚀] Server listening on ${server.url}`);
 
-const lastCookieCreation = (await cookieJar!.getCookies(SCHEDULE_BUILDER_URL))[0].creation as Date;
-const cookieAge = Date.now() - lastCookieCreation.getTime();
+const cookieAge = await getCookieAge(cookieJar!);
 const timeUntilRefresh = Math.max(0, COOKIE_LIFETIME_MS - cookieAge);
 
 setTimeout(() => {

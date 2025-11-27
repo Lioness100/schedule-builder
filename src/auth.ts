@@ -148,6 +148,12 @@ export async function getXsrfToken(jar: CookieJar) {
 	return xsrfCookie.value;
 }
 
+export async function getCookieAge(jar: CookieJar) {
+	const cookies = await jar.getCookies(SCHEDULE_BUILDER_URL);
+	const creation = cookies[0].creation as Date;
+	return Date.now() - creation.getTime();
+}
+
 export async function verifyCookies(jar: CookieJar) {
 	const response = await fetch(SCHEDULE_BUILDER_URL, {
 		headers: { cookie: await getCookieString(jar) },
