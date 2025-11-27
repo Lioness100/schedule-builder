@@ -25,7 +25,7 @@ if (!cookieJar || !(await verifyCookies(cookieJar))) {
 
 const server = Bun.serve({
 	port: env.PORT,
-	idleTimeout: 20_000,
+	idleTimeout: 20,
 	routes: {
 		'/': Bun.file('public/index.html'),
 		'/health': async () => {
