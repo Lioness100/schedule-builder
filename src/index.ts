@@ -7,14 +7,6 @@ import { env } from './config';
 let cookieJar = await loadCookies();
 let refreshPromise: Promise<CookieJar> | null = null;
 
-async function debugCookies(step: number) {
-	const cookies = await cookieJar!.getCookies(SCHEDULE_BUILDER_URL);
-	for (const cookie of cookies) {
-		const displayValue = cookie.value.length > 10 ? `${cookie.value.slice(0, 10)}…` : cookie.value;
-		console.log(`[${step}] - ${cookie.key}=${displayValue}`);
-	}
-}
-
 async function refreshCookies() {
 	if (refreshPromise) {
 		return refreshPromise;
@@ -76,9 +68,7 @@ const server = Bun.serve({
 			let response = await makeRequest();
 			if (response.status >= 300 && response.status <= 403) {
 				console.log(`[🔄] Authentication failed (status ${response.status}), triggering refresh…`);
-				await debugCookies(1);
 				await refreshCookies();
-				await debugCookies(2);
 				response = await makeRequest();
 				if (response.status >= 300 && response.status <= 403) {
 					throw new Error(`Authentication required: ${response.status} ${response.statusText}`);
@@ -100,9 +90,7 @@ async function keepaliveCheck() {
 	const isValid = await verifyCookies(cookieJar!);
 	if (!isValid) {
 		console.log('[⚠️] Keepalive check failed, triggering refresh…');
-		await debugCookies(3);
 		await refreshCookies();
-		await debugCookies(4);
 	}
 }
 

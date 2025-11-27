@@ -18,27 +18,20 @@ export async function authenticate() {
 		args: ['--no-sandbox', '--disable-setuid-sandbox']
 	});
 
-	// Debug: Monitor browser disconnection
-	browser.on('disconnected', () => {
-		console.error('[🔴] BROWSER DISCONNECTED! Stack trace:', new Error().stack);
-	});
-
 	try {
 		const page = await browser.newPage();
 		await page.emulate(KnownDevices['iPad Pro landscape']);
 
-		// Clear stale schedule builder cookies to prevent /logged-out redirect
-		console.log('[🧹] Clearing stale schedule builder cookies…');
+		// If the browser navigates to Schedule Builder with expired cookies, it
+		// will redirect to /logged-out and close the tab.
 		const existingCookies = await page.cookies(SCHEDULE_BUILDER_URL);
 		if (existingCookies.length > 0) {
 			await page.deleteCookie(...existingCookies);
-			console.log(`[✓] Cleared ${existingCookies.length} stale cookie(s)`);
+			console.log(`[🧹] Cleared ${existingCookies.length} stale cookie(s)`);
 		}
 
 		console.log('[💬] Navigating to SPIRE portal…');
-		await page.goto(SPIRE_ENTRY_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch((error) => {
-			throw new Error(`Failed to navigate to SPIRE portal: ${error.message}`, { cause: error });
-		});
+		await page.goto(SPIRE_ENTRY_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
 		if (page.url().includes('login.microsoftonline.com')) {
 			console.log('[🔐] Logging in with Microsoft OAuth…');
@@ -91,8 +84,8 @@ export async function authenticate() {
 		});
 
 		await page.click('#SCC_LO_FL_WRK_SCC_VIEW_BTN\\$24\\$\\$10');
-
 		console.log('[⏳] Waiting for schedule builder to open…');
+
 		const target = await newPagePromise;
 		const schedulerPage = await target.page();
 
@@ -100,34 +93,13 @@ export async function authenticate() {
 			throw new Error('Failed to open schedule builder page');
 		}
 
-		// Debug: Monitor target closure
-		schedulerPage.on('targetdestroyed', () => {
-			console.error('[🔴] TARGET DESTROYED! Stack trace:', new Error().stack);
-		});
-
-		schedulerPage.on('close', () => {
-			console.error('[🔴] SCHEDULER PAGE CLOSED! Stack trace:', new Error().stack);
-		});
-
 		console.log('[📝] Extracting cookies and XSRF token…');
-
 		const cookieJar = new CookieJar();
 
-		console.log('[1️⃣] Waiting for XSRF token input…');
-		console.log(`[🔍] Page closed? ${schedulerPage.isClosed()} | Target closed? ${target.asPage() === null}`);
-
-		await schedulerPage
-			.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 })
-			.catch((error) => {
-				console.error('[❌] Failed waiting for XSRF token:', error.message);
-				console.error(`[🔍] Page closed? ${schedulerPage.isClosed()} | URL: ${schedulerPage.url()}`);
-				throw error;
-			});
-
-		console.log('[2️⃣] Extracting XSRF token value…');
+		// It seems the XSRF token is necessary for POST requests.
+		await schedulerPage.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 });
 		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
 
-		console.log('[3️⃣] Creating XSRF cookie…');
 		const xsrfCookie = new Cookie({
 			key: 'X-XSRF-TOKEN-VALUE',
 			value: xsrfToken,
@@ -138,17 +110,7 @@ export async function authenticate() {
 		});
 
 		await cookieJar.setCookie(xsrfCookie, SCHEDULE_BUILDER_URL);
-
-		console.log('[4️⃣] Waiting for Term selector…');
-		console.log(`[🔍] Page closed? ${schedulerPage.isClosed()} | Target closed? ${target.asPage() === null}`);
-
-		await schedulerPage.waitForSelector('#Term-options', { timeout: 15_000 }).catch((error) => {
-			console.error('[❌] Failed waiting for Term selector:', error.message);
-			console.error(`[🔍] Page closed? ${schedulerPage.isClosed()} | URL: ${schedulerPage.url()}`);
-			throw error;
-		});
-
-		console.log('[5️⃣] Extracting all cookies…');
+		await schedulerPage.waitForSelector('#Term-options', { timeout: 15_000 });
 		const cookies = await schedulerPage.cookies();
 
 		for (const cookie of cookies) {
@@ -172,7 +134,6 @@ export async function authenticate() {
 
 		return cookieJar;
 	} finally {
-		console.log('[🧼] Closing browser…');
 		await browser.close();
 	}
 }
