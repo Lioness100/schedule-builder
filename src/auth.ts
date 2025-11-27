@@ -18,6 +18,11 @@ export async function authenticate() {
 		args: ['--no-sandbox', '--disable-setuid-sandbox']
 	});
 
+	// Debug: Monitor browser disconnection
+	browser.on('disconnected', () => {
+		console.error('[🔴] BROWSER DISCONNECTED! Stack trace:', new Error().stack);
+	});
+
 	try {
 		const page = await browser.newPage();
 		await page.emulate(KnownDevices['iPad Pro landscape']);
@@ -87,15 +92,34 @@ export async function authenticate() {
 			throw new Error('Failed to open schedule builder page');
 		}
 
+		// Debug: Monitor target closure
+		schedulerPage.on('targetdestroyed', () => {
+			console.error('[🔴] TARGET DESTROYED! Stack trace:', new Error().stack);
+		});
+
+		schedulerPage.on('close', () => {
+			console.error('[🔴] SCHEDULER PAGE CLOSED! Stack trace:', new Error().stack);
+		});
+
 		console.log('[📝] Extracting cookies and XSRF token…');
 
 		const cookieJar = new CookieJar();
 
-		console.log(1);
-		await schedulerPage.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 });
-		console.log(2);
+		console.log('[1️⃣] Waiting for XSRF token input…');
+		console.log(`[🔍] Page closed? ${schedulerPage.isClosed()} | Target closed? ${target.asPage() === null}`);
+
+		await schedulerPage
+			.waitForSelector('input[name="__RequestVerificationToken"]', { timeout: 15_000 })
+			.catch((error) => {
+				console.error('[❌] Failed waiting for XSRF token:', error.message);
+				console.error(`[🔍] Page closed? ${schedulerPage.isClosed()} | URL: ${schedulerPage.url()}`);
+				throw error;
+			});
+
+		console.log('[2️⃣] Extracting XSRF token value…');
 		const xsrfToken = await schedulerPage.$eval('input[name="__RequestVerificationToken"]', (el) => el.value);
-		console.log(2.5);
+
+		console.log('[3️⃣] Creating XSRF cookie…');
 		const xsrfCookie = new Cookie({
 			key: 'X-XSRF-TOKEN-VALUE',
 			value: xsrfToken,
@@ -106,9 +130,17 @@ export async function authenticate() {
 		});
 
 		await cookieJar.setCookie(xsrfCookie, SCHEDULE_BUILDER_URL);
-		console.log(3);
-		await schedulerPage.waitForSelector('#Term-options', { timeout: 15_000 });
-		console.log(4);
+
+		console.log('[4️⃣] Waiting for Term selector…');
+		console.log(`[🔍] Page closed? ${schedulerPage.isClosed()} | Target closed? ${target.asPage() === null}`);
+
+		await schedulerPage.waitForSelector('#Term-options', { timeout: 15_000 }).catch((error) => {
+			console.error('[❌] Failed waiting for Term selector:', error.message);
+			console.error(`[🔍] Page closed? ${schedulerPage.isClosed()} | URL: ${schedulerPage.url()}`);
+			throw error;
+		});
+
+		console.log('[5️⃣] Extracting all cookies…');
 		const cookies = await schedulerPage.cookies();
 
 		for (const cookie of cookies) {
@@ -132,6 +164,7 @@ export async function authenticate() {
 
 		return cookieJar;
 	} finally {
+		console.log('[🧼] Closing browser…');
 		await browser.close();
 	}
 }
