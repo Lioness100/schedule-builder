@@ -1,4 +1,4 @@
-# UMass Schedule Builder Proxy
+# UMass Schedule Builder Reverse Proxy
 
 Local reverse-proxy to UMass Schedule Builder API with automatically refreshing authentication.
 
@@ -49,7 +49,7 @@ docker compose up -d --build
 # Install dependencies
 bun install
 
-# Start the proxy server
+# Start the reverse proxy server
 bun start
 
 # Or extract cookies only
@@ -58,7 +58,7 @@ bun cookies
 
 ## API Usage
 
-Once the proxy server is running:
+Once the reverse proxy server is running:
 
 ```bash
 # Public endpoints (no auth required)
