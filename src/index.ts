@@ -21,7 +21,7 @@ async function refreshCookies() {
 	refreshPromise = null;
 }
 
-if (!env.ENABLED && (!cookieJar || !(await verifyCookies(cookieJar)))) {
+if (env.ENABLED && (!cookieJar || !(await verifyCookies(cookieJar)))) {
 	await refreshCookies();
 }
 
