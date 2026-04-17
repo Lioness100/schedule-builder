@@ -12,14 +12,15 @@ UMASS_EMAIL=youremail@umass.edu
 UMASS_PASSWORD=your_password
 
 # Optional (shown with defaults)
-PORT: 3007
-KEEPALIVE_INTERVAL: 45000
-COOKIE_PATH: .cache/cookies.json
-BROWSER_DATA_DIR: .browser-data
+PORT=3007
+KEEPALIVE_INTERVAL=45000
+COOKIE_PATH=.cache/cookies.json
+BROWSER_DATA_DIR=.browser-data
+ENABLED=true # Set to false to disable the proxy (will still serve static files and health endpoint)
 
 # API Security (leave empty for no authentication)
 # Generate: openssl rand -base64 32
-API_KEY: your_secure_key_here
+API_KEY=your_secure_key_here
 ```
 
 ## Usage

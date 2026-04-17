@@ -21,7 +21,7 @@ async function refreshCookies() {
 	refreshPromise = null;
 }
 
-if (!cookieJar || !(await verifyCookies(cookieJar))) {
+if (!env.ENABLED && (!cookieJar || !(await verifyCookies(cookieJar)))) {
 	await refreshCookies();
 }
 
@@ -31,10 +31,17 @@ const server = Bun.serve({
 	routes: {
 		'/': Bun.file('public/index.html'),
 		'/health': async () => {
-			const healthy = !refreshPromise && (await verifyCookies(cookieJar!));
+			const healthy = env.ENABLED && !refreshPromise && (await verifyCookies(cookieJar!));
 			return Response.json({ healthy }, { status: healthy ? 200 : 503 });
 		},
 		'/api/*': async (req) => {
+			if (!env.ENABLED) {
+				return Response.json(
+					{ error: 'Service unavailable', message: 'The proxy is currently disabled' },
+					{ status: 503 }
+				);
+			}
+
 			const url = new URL(req.url);
 
 			if (url.pathname !== '/api/terms' && env.API_KEY) {
@@ -89,10 +96,12 @@ const server = Bun.serve({
 
 console.log(`[🚀] Server listening on ${server.url}`);
 
-const cookieAge = await getCookieAge(cookieJar!);
-const timeUntilRefresh = Math.max(0, COOKIE_LIFETIME_MS - cookieAge);
+if (env.ENABLED) {
+	const cookieAge = await getCookieAge(cookieJar!);
+	const timeUntilRefresh = Math.max(0, COOKIE_LIFETIME_MS - cookieAge);
 
-setTimeout(() => {
-	void refreshCookies();
-	setInterval(() => void refreshCookies(), COOKIE_LIFETIME_MS);
-}, timeUntilRefresh);
+	setTimeout(() => {
+		void refreshCookies();
+		setInterval(() => void refreshCookies(), COOKIE_LIFETIME_MS);
+	}, timeUntilRefresh);
+}

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { cleanEnv, email, num, port, str } from 'envalid';
+import { bool, cleanEnv, email, num, port, str } from 'envalid';
 
 export const env = cleanEnv(process.env, {
 	UMASS_EMAIL: email(),
@@ -8,5 +8,6 @@ export const env = cleanEnv(process.env, {
 	KEEPALIVE_INTERVAL: num({ default: 45_000 }),
 	COOKIE_PATH: str({ default: '.cache/cookies.json' }),
 	BROWSER_DATA_DIR: str({ default: '.browser-data' }),
-	API_KEY: str({ default: '' })
+	API_KEY: str({ default: '' }),
+	ENABLED: bool({ default: true })
 });

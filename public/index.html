@@ -255,7 +255,7 @@
                     statusText.textContent = 'Service is healthy and authenticated';
                 } else {
                     indicator.className = 'status-indicator status-unhealthy';
-                    statusText.textContent = 'Service is unavailable (authentication required)';
+                    statusText.textContent = 'Service is currently disabled';
                 }
             } catch (error) {
                 const indicator = document.getElementById('status-indicator');
